@@ -1,6 +1,7 @@
 use super::conslist::ConsList;
 use std::rc::Rc;
 
+#[derive(Debug)]
 pub enum LispType {
     String(String),
     Integer(i64),

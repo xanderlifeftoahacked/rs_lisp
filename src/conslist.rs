@@ -1,13 +1,14 @@
-use super::lisptype::LispType;
+use super::node::Node;
 use std::rc::Rc;
 
+#[derive(Debug)]
 pub enum ConsList {
-    Cons(LispType, Rc<ConsList>),
+    Cons(Node, Rc<ConsList>),
     Nil,
 }
 
 impl ConsList {
-    pub fn car(&self) -> Option<&LispType> {
+    pub fn car(&self) -> Option<&Node> {
         match self {
             ConsList::Cons(ref head, _) => Some(head),
             ConsList::Nil => None,
@@ -18,13 +19,6 @@ impl ConsList {
         match self {
             ConsList::Cons(_, ref tail) => Some(tail),
             ConsList::Nil => None,
-        }
-    }
-
-    pub fn show(&self) -> String {
-        match self {
-            ConsList::Cons(head, tail) => format!("( {} {} )", head.show(), tail.show()),
-            ConsList::Nil => "".to_string(),
         }
     }
 }
