@@ -1,9 +1,8 @@
 pub mod conslist;
 pub mod lexer;
 pub mod lisptype;
-pub mod node;
 pub mod parser;
-pub mod parser_enums;
+pub mod type_enums;
 
 #[cfg(test)]
 mod tests {
@@ -16,7 +15,7 @@ mod tests {
         let cons_list = Rc::new(ConsList::Cons(
             LispType::Integer(42),
             Rc::new(ConsList::Cons(
-                LispType::Double(3.14),
+                LispType::Float(3.14),
                 Rc::new(ConsList::Cons(
                     LispType::Bool(true),
                     Rc::new(ConsList::Cons(

@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum BinOp {
     ADD,
     SUB,
@@ -8,7 +8,7 @@ pub enum BinOp {
     SCONCAT,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum BinPred {
     GT,
     GTE,
@@ -18,7 +18,7 @@ pub enum BinPred {
     NOEQ,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SpecForms {
     DEF,
     SET,
