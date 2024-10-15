@@ -24,9 +24,9 @@ impl LispType {
             LispType::Float(val) => format!("{}", val),
             LispType::Symbol(symb) => symb.to_string(),
             LispType::Cons(list) => list.show(),
-            LispType::BinOp(op) => format!("{:?}", op),
-            LispType::BinPred(pred) => format!("{:?}", pred),
-            LispType::SpecForm(sf) => format!("{:?}", sf),
+            LispType::BinOp(op) => format!("{}", op.to_string()),
+            LispType::BinPred(pred) => format!("{}", pred.to_string()),
+            LispType::SpecForm(sf) => format!("{}", sf.to_string()),
         }
     }
 }

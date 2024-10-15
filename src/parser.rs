@@ -10,8 +10,8 @@ pub struct Parser {}
 impl Parser {
     fn parse_token(token: &Token) -> Option<LispType> {
         match token {
-            Token::LParen => None,
-            Token::RParen => None,
+            Token::LParen(_, _) => None,
+            Token::RParen(_, _) => None,
             Token::Float(val) => Some(LispType::Float(val.to_owned())),
             Token::Integer(val) => Some(LispType::Integer(val.to_owned())),
             Token::Comment(_) => None,
@@ -41,13 +41,13 @@ impl Parser {
 
         while let Some(token) = tokens.next() {
             match token {
-                Token::LParen => {
+                Token::LParen(_, _) => {
                     let sublist = Self::parse_list(tokens);
                     result = Rc::new(ConsList::Cons(LispType::Cons(sublist), result));
                 }
-                Token::RParen => break,
+                Token::RParen(_, _) => break,
                 _ => {
-                    if let Some(value) = Self::parse_token(token.clone()) {
+                    if let Some(value) = Self::parse_token(&token.clone()) {
                         result = Rc::new(ConsList::Cons(value, result));
                     }
                 }

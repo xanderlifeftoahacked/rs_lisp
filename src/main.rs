@@ -4,26 +4,6 @@ use std::fs;
 use std::io::{self, Write};
 
 fn main() {
-    let source: String = fs::read_to_string("text.lisp").unwrap();
-    let mut lexer = Lexer::new(&source);
-    let mut tokens: Vec<Token> = Vec::new();
-
-    loop {
-        match lexer.next_token() {
-            Ok(Some(token)) => tokens.push(token),
-            Ok(None) => break,
-            Err(e) => {
-                println!("Error: {:?} at {}", e, lexer.get_position());
-                break;
-            }
-        }
-    }
-
-    let result = Parser::parse(tokens);
-    println!("{}", result.show());
-
-    println!("{:?}", result);
-
     loop {
         print!(">>> ");
         io::stdout().flush().unwrap();
@@ -34,13 +14,54 @@ fn main() {
             .read_line(&mut input)
             .expect("Failed to read line!");
 
-        let input = input.trim();
+        let mut input = input.trim().to_string();
 
-        if input == "exit" {
+        if input == ":q" {
             println!("Exiting LISPrs...");
             break;
         }
 
-        println!("{}", input);
+        if input.len() > 3 && input[0..2] == ":l".to_owned() {
+            println!("Loading from file...");
+            input = fs::read_to_string(input[3..].to_string())
+                .unwrap()
+                .to_string();
+        }
+
+        let mut lexer = Lexer::new(&input);
+        let mut tokens: Vec<Token> = Vec::new();
+        let mut braces: Vec<Token> = Vec::new();
+
+        loop {
+            match lexer.next_token() {
+                Ok(Some(token)) => {
+                    match token {
+                        Token::LParen(_, _) => braces.push(token.clone()),
+                        Token::RParen(_, _) => match braces.pop() {
+                            Some(_) => (),
+                            None => panic!("Unmatched brace {:?}", token),
+                        },
+                        _ => (),
+                    };
+
+                    tokens.push(token)
+                }
+                Ok(None) => break,
+                Err(e) => {
+                    println!("Error: {:?}", e,);
+                    break;
+                }
+            }
+        }
+
+        match braces.pop() {
+            Some(token) => panic!("Unmatched brace {:?}", token),
+            None => (),
+        }
+
+        let result = Parser::parse(tokens);
+
+        println!("{}", result.show());
+        println!("{:?}", result);
     }
 }
