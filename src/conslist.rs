@@ -21,17 +21,21 @@ impl ConsList {
             ConsList::Nil => None,
         }
     }
+    
+    pub fn show(&self) -> String{
+        return format!("({})", self.show_())
+    }
 
-    pub fn show(&self) -> String {
+    pub fn show_(&self) -> String {
         match self {
             ConsList::Cons(head, tail) => {
                 let head_str = if let LispType::Cons(ref cons) = head {
-                    format!("({})", cons.show())
+                    format!("({})", cons.show_())
                 } else {
                     head.show()
                 };
 
-                let tail_str = tail.show();
+                let tail_str = tail.show_();
 
                 if tail_str.is_empty() {
                     head_str
