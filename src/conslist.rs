@@ -21,9 +21,9 @@ impl ConsList {
             ConsList::Nil => None,
         }
     }
-    
-    pub fn show(&self) -> String{
-        return format!("({})", self.show_())
+
+    pub fn show(&self) -> String {
+        return format!("({})", self.show_());
     }
 
     pub fn show_(&self) -> String {

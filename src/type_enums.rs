@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum BinOp {
     ADD,
     SUB,
@@ -8,7 +8,7 @@ pub enum BinOp {
     SCONCAT,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum BinPred {
     GT,
     GTE,

@@ -1,9 +1,13 @@
-use rs_lisp::lexer::*;
+use rs_lisp::evaluator::Evaluator;
+use rs_lisp::{evaluator, lexer::*};
 use rs_lisp::parser::Parser;
-use std::fs;
+use std::{env, fs};
 use std::io::{self, Write};
 
 fn main() {
+    env::set_var("RUST_BACKTRACE", "1");
+    let mut evaluator = Evaluator::new();
+
     loop {
         print!(">>> ");
         io::stdout().flush().unwrap();
@@ -32,6 +36,7 @@ fn main() {
         let mut tokens: Vec<Token> = Vec::new();
         let mut braces: Vec<Token> = Vec::new();
 
+        let mut error = false;
         loop {
             match lexer.next_token() {
                 Ok(Some(token)) => {
@@ -39,7 +44,11 @@ fn main() {
                         Token::LParen(_, _) => braces.push(token.clone()),
                         Token::RParen(_, _) => match braces.pop() {
                             Some(_) => (),
-                            None => panic!("Unmatched brace {:?}", token),
+                            None => {
+                                eprintln!("Unmatched brace {:?}", token);
+                                error = true;
+                                break;
+                            }
                         },
                         _ => (),
                     };
@@ -48,20 +57,29 @@ fn main() {
                 }
                 Ok(None) => break,
                 Err(e) => {
-                    println!("Error: {:?}", e,);
+                    eprintln!("Error: {:?}", e,);
                     break;
                 }
             }
         }
-
         match braces.pop() {
-            Some(token) => panic!("Unmatched brace {:?}", token),
+            Some(token) => {
+                eprintln!("Unmatched brace {:?}", token);
+                error = true;
+            }
             None => (),
+        }
+
+        if error {
+            continue;
         }
 
         let result = Parser::parse(tokens);
 
         println!("{}", result.show());
         println!("{:?}", result);
+
+        let result = evaluator.eval(rs_lisp::lisptype::LispType::Cons(result));
+        println!("{}", result.unwrap().show());
     }
 }

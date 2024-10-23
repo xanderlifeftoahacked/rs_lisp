@@ -16,6 +16,15 @@ pub enum LispType {
 }
 
 impl LispType {
+    pub fn as_float(&self) -> Option<f64> {
+        match self {
+            LispType::Integer(x) => Some(*x as f64),
+            LispType::Float(x) => Some(*x),
+            LispType::Bool(x) => Some(if *x { 1.0 } else { 0.0 }),
+            _ => None,
+        }
+    }
+
     pub fn show(&self) -> String {
         match self {
             LispType::Bool(boolean) => format!("{}", boolean),

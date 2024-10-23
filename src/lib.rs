@@ -1,4 +1,5 @@
 pub mod conslist;
+pub mod evaluator;
 pub mod lexer;
 pub mod lisptype;
 pub mod parser;
