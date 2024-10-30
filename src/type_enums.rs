@@ -36,6 +36,7 @@ pub enum SpecForms {
     LAMBDA,
     MACRO,
     MACROEXPAND,
+    DO,
 }
 
 impl BinOp {
@@ -94,7 +95,7 @@ impl SpecForms {
             "def" => Some(Self::DEF),
             "set!" => Some(Self::SET),
             "get" => Some(Self::GET),
-            "quote" => Some(Self::QUOTE),
+            "'" => Some(Self::QUOTE),
             "typeof" => Some(Self::TYPEOF),
             "cons" => Some(Self::CONS),
             "car" => Some(Self::CAR),
@@ -107,6 +108,7 @@ impl SpecForms {
             "lambda" => Some(Self::LAMBDA),
             "macro" => Some(Self::MACRO),
             "macroexpand" => Some(Self::MACROEXPAND),
+            "do" => Some(Self::DO),
             _ => None,
         }
     }
@@ -129,6 +131,7 @@ impl SpecForms {
             Self::LAMBDA => "lambda",
             Self::MACRO => "macro",
             Self::MACROEXPAND => "macroexpand",
+            Self::DO => "do",
         }
     }
 }

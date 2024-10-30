@@ -1,8 +1,8 @@
 use rs_lisp::evaluator::Evaluator;
-use rs_lisp::{evaluator, lexer::*};
 use rs_lisp::parser::Parser;
-use std::{env, fs};
+use rs_lisp::{evaluator, lexer::*, lisptype::LispType};
 use std::io::{self, Write};
+use std::{env, fs};
 
 fn main() {
     env::set_var("RUST_BACKTRACE", "1");
@@ -79,7 +79,11 @@ fn main() {
         println!("{}", result.show());
         println!("{:?}", result);
 
-        let result = evaluator.eval(rs_lisp::lisptype::LispType::Cons(result));
-        println!("{}", result.unwrap().show());
+        let eval_result = evaluator.eval(LispType::Cons(result));
+
+        match eval_result {
+            Ok(result) => println!("{}", result.show()),
+            Err(e) => eprintln!("Evaluation error: {}", e),
+        }
     }
 }

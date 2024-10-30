@@ -24,7 +24,7 @@ pub struct Lexer {
     paren_count: isize,
 }
 
-static SYMB_CHARS: &str = "'=+!-*/><";
+static SYMB_CHARS: &str = "'=+-!*/><";
 
 impl Lexer {
     pub fn new(input: &str) -> Self {
@@ -41,10 +41,19 @@ impl Lexer {
         (self.string, self.string_position)
     }
 
+    /// Peek at the next character without consuming it.
+    fn peek_char(&self) -> Option<char> {
+        self.input.get(self.position + 1).cloned()
+    }
+
     pub fn next_token(&mut self) -> Result<Option<Token>, LexerError> {
         self.skip_whitespace();
 
         if self.position >= self.input.len() {
+            // If there are unmatched parentheses at the end
+            if self.paren_count != 0 {
+                return Err(LexerError::UnmatchedParen);
+            }
             return Ok(None);
         }
 
@@ -60,11 +69,28 @@ impl Lexer {
                 self.position += 1;
                 self.string_position += 1;
                 self.paren_count -= 1;
+                if self.paren_count < 0 {
+                    return Err(LexerError::UnmatchedParen);
+                }
                 Ok(Some(Token::RParen(self.string, self.string_position)))
             }
             '"' => self.read_string(),
             ';' => self.read_comment(),
-            c if c.is_digit(10) || c == '-' => self.read_number(),
+            '-' => {
+                if self.peek_char().map_or(false, |ch| ch.is_digit(10)) {
+                    self.read_number()
+                } else {
+                    self.read_symbol()
+                }
+            }
+            '+' => {
+                if self.peek_char().map_or(false, |ch| ch.is_digit(10)) {
+                    self.read_number()
+                } else {
+                    self.read_symbol()
+                }
+            }
+            c if c.is_digit(10) => self.read_number(),
             c if is_symbol_start(c) => self.read_symbol(),
             _ => Err(LexerError::UnexpectedChar(
                 current_char,
@@ -75,11 +101,17 @@ impl Lexer {
     }
 
     fn skip_whitespace(&mut self) {
-        if self.position < self.input.len() && self.input[self.position] == '\n' {
-            self.string += 1;
-            self.string_position = -1;
-        }
-        while self.position < self.input.len() && self.input[self.position].is_whitespace() {
+        while self.position < self.input.len() {
+            let current_char = self.input[self.position];
+            if current_char == '\n' {
+                self.string += 1;
+                self.string_position = 0;
+                self.position += 1;
+                continue;
+            }
+            if !current_char.is_whitespace() {
+                break;
+            }
             self.string_position += 1;
             self.position += 1;
         }
@@ -89,11 +121,16 @@ impl Lexer {
         let start_pos = self.position;
         let mut has_dot = false;
 
+        if self.input[self.position] == '-' || self.input[self.position] == '+' {
+            self.position += 1;
+            self.string_position += 1;
+        }
+
         while self.position < self.input.len() {
             let current_char = self.input[self.position];
             if current_char == '.' && !has_dot {
                 has_dot = true;
-            } else if !current_char.is_digit(10) && current_char != '.' && current_char != '-' {
+            } else if !current_char.is_digit(10) && current_char != '.' {
                 break;
             }
             self.position += 1;
@@ -101,7 +138,14 @@ impl Lexer {
         }
 
         let number_str: String = self.input[start_pos..self.position].iter().collect();
-        if has_dot {
+        if number_str == "-" || number_str == "+" {
+            // Handle cases where '-' or '+' is not followed by a digit
+            Err(LexerError::UnexpectedChar(
+                number_str.chars().last().unwrap(),
+                self.string,
+                self.string_position,
+            ))
+        } else if has_dot {
             match number_str.parse::<f64>() {
                 Ok(num) => Ok(Some(Token::Float(num))),
                 Err(_) => Err(LexerError::UnexpectedChar(
@@ -134,9 +178,17 @@ impl Lexer {
                     let string_content: String =
                         self.input[start_pos..self.position].iter().collect();
                     self.position += 1;
+                    self.string_position += 1;
                     return Ok(Some(Token::StringLiteral(string_content)));
                 }
-                _ => self.position += 1,
+                '\n' => {
+                    // Handle multi-line strings or unexpected newline
+                    return Err(LexerError::UnexpectedEof);
+                }
+                _ => {
+                    self.position += 1;
+                    self.string_position += 1;
+                }
             }
         }
 
@@ -149,13 +201,17 @@ impl Lexer {
 
         let start_pos = self.position;
 
-        while self.position < self.input.len() && self.input[self.position] != ';' {
+        while self.position < self.input.len() && self.input[self.position] != '\n' {
             self.position += 1;
             self.string_position += 1;
         }
 
-        self.position += 1;
-        self.string_position += 1;
+        // Optionally consume the newline character
+        if self.position < self.input.len() && self.input[self.position] == '\n' {
+            self.position += 1;
+            self.string_position = 0;
+            self.string += 1;
+        }
 
         let comment_content: String = self.input[start_pos..self.position].iter().collect();
         Ok(Some(Token::Comment(comment_content)))

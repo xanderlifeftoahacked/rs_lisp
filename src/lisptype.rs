@@ -18,9 +18,22 @@ pub enum LispType {
 impl LispType {
     pub fn as_float(&self) -> Option<f64> {
         match self {
-            LispType::Integer(x) => Some(*x as f64),
-            LispType::Float(x) => Some(*x),
-            LispType::Bool(x) => Some(if *x { 1.0 } else { 0.0 }),
+            LispType::Integer(i) => Some(*i as f64),
+            LispType::Float(f) => Some(*f),
+            _ => None,
+        }
+    }
+
+    pub fn as_integer(&self) -> Option<i64> {
+        match self {
+            LispType::Integer(i) => Some(*i),
+            _ => None,
+        }
+    }
+
+    pub fn as_string(&self) -> Option<String> {
+        match self {
+            LispType::String(s) => Some(s.clone()),
             _ => None,
         }
     }
